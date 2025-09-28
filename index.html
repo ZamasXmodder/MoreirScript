@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Rainbow Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: #000;
+            overflow-x: hidden;
+            color: #fff;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        /* Matrix Rain Animation */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, #000, #001122);
+        }
+        
+        .matrix-char {
+            position: absolute;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            opacity: 0.8;
+            animation: fall linear infinite;
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        
+        /* Rainbow glow effect */
+        .rainbow {
+            background: linear-gradient(
+                45deg,
+                #ff0080, #ff8000, #ffff00, #80ff00,
+                #00ff80, #00ffff, #0080ff, #8000ff,
+                #ff0080
+            );
+            background-size: 400% 400%;
+            animation: rainbow 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(20,20,20,0.95));
+            backdrop-filter: blur(10px);
+            border-right: 2px solid #0f0;
+            box-shadow: 0 0 30px rgba(0,255,0,0.3);
+            padding: 30px;
+            z-index: 1000;
+        }
+        
+        .sidebar h2 {
+            color: #0f0;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 0 0 20px #0f0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Draggable lines */
+        .drag-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .drag-line {
+            width: 30px;
+            height: 4px;
+            background: linear-gradient(90deg, #0f0, #00ff80);
+            border-radius: 2px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+        
+        .drag-line:hover {
+            transform: scaleX(1.2);
+            box-shadow: 0 0 20px rgba(0,255,0,0.8);
+        }
+        
+        .drag-line:active {
+            cursor: grabbing;
+            transform: scaleX(0.9);
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            color: #0f0;
+            font-family: 'Orbitron', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
+            border-color: #00ff80;
+        }
+        
+        .input-group label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: #000;
+            padding: 0 10px;
+            color: #0f0;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .login-btn {
+            padding: 15px;
+            background: linear-gradient(45deg, #0f0, #00ff80);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,255,0,0.4);
+        }
+        
+        .admin-panel {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0,255,0,0.1);
+            border-radius: 10px;
+            border: 1px solid #0f0;
+        }
+        
+        .admin-welcome {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,255,0,0.3);
+        }
+        
+        .stats-section {
+            margin-top: 20px;
+        }
+        
+        .stats-header {
+            color: #00ff80;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        
+        .stats-container {
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 10px;
+            border: 2px solid #00ff80;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,255,128,0.1), transparent);
+            animation: scan 3s infinite;
+        }
+        
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,255,0,0.05);
+            border-radius: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stats-label {
+            color: #0f0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .stats-value {
+            color: #00ff80;
+            font-size: 18px;
+            font-weight: 900;
+            text-shadow: 0 0 15px currentColor;
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ff0040;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .error-message {
+            color: #ff0040;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            text-shadow: 0 0 10px #ff0040;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 300px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+        
+        .japanese-text {
+            font-size: 120px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 0 40px currentColor;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 40px currentColor; }
+            to { text-shadow: 0 0 80px currentColor, 0 0 120px currentColor; }
+        }
+        
+        .subtitle {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #0f0;
+            text-shadow: 0 0 20px #0f0;
+            font-weight: 700;
+        }
+        
+        .premium-subtitle {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 60px;
+            color: #ff0080;
+            text-shadow: 0 0 20px #ff0080;
+            font-weight: 700;
+            letter-spacing: 2px;
+            animation: pulse 2s infinite;
+        }
+        
+        .get-key-btn {
+            padding: 25px 50px;
+            font-size: 24px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff0080, #8000ff);
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 10px 30px rgba(255,0,128,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .get-key-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .get-key-btn:hover:before {
+            left: 100%;
+        }
+        
+        .get-key-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(255,0,128,0.5);
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-text {
+            color: #0f0;
+            font-size: 24px;
+            text-shadow: 0 0 20px #0f0;
+            animation: pulse 1s infinite;
+        }
+        
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #0f0;
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+            box-shadow: 0 0 10px currentColor;
+        }
+        
+        @keyframes float {
+            0% { 
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .japanese-text {
+                font-size: 60px;
+            }
+            
+            .get-key-btn {
+                padding: 20px 30px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="matrix-bg"></div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text">Generating premium key...</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>ログイン管理者</h2>
+        <div class="drag-lines">
+            <div class="drag-line" draggable="true"></div>
+            <div class="drag-line" draggable="true"></div>
+            <div class="drag-line" draggable="true"></div>
+        </div>
+        <form class="login-form" id="loginForm">
+            <div class="input-group">
+                <label>Usuario</label>
+                <input type="text" id="username" placeholder="Ingresa tu usuario">
+            </div>
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="password" placeholder="Ingresa tu contraseña">
+            </div>
+            <button type="submit" class="login-btn">ONLY REAL PREMIUM</button>
+        </form>
+        <div id="errorMessage" class="error-message"></div>
+        <div id="adminPanel" class="admin-panel">
+            <div class="admin-welcome">
+                <h3 style="color: #0f0; margin-bottom: 15px;">✅ ACCESO CONCEDIDO</h3>
+                <p style="color: #0f0;">Bienvenido al panel de administración, ZAMAS</p>
+                <p style="color: #00ff80; font-size: 12px; margin-top: 10px;">システム管理者モード</p>
+            </div>
+            
+            <div class="stats-section">
+                <div class="stats-header">📊 ANALYTICS DASHBOARD <span class="live-indicator"></span></div>
+                
+                <div class="stats-container">
+                    <div class="stats-item">
+                        <span class="stats-label">📈 Total Key Requests</span>
+                        <span class="stats-value" id="totalClicks">0</span>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <span class="stats-label">🔥 Session Clicks</span>
+                        <span class="stats-value" id="sessionClicks">0</span>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <span class="stats-label">⏱️ Last Click Time</span>
+                        <span class="stats-value" id="lastClickTime">Never</span>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <span class="stats-label">👥 Active Users</span>
+                        <span class="stats-value" id="activeUsers">1</span>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <span class="stats-label">🌐 Redirects Success</span>
+                        <span class="stats-value" id="redirectCount">0</span>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px; padding: 10px; background: rgba(255,0,128,0.1); border-radius: 5px; border: 1px solid #ff0080;">
+                    <div style="color: #ff0080; font-size: 12px; margin-bottom: 5px;">🚀 PREMIUM STATS LIVE</div>
+                    <div style="color: #0f0; font-size: 24px; font-weight: 900;" id="globalCounter">0</div>
+                    <div style="color: #00ff80; font-size: 10px;">Global Key Distribution Counter</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="japanese-text rainbow">マトリックス</div>
+        <div class="subtitle">Get trial 2 days free key</div>
+        <div class="premium-subtitle">PREMIUM FREE SCRIPT - STEAL A BRAINROT</div>
+        <button class="get-key-btn" onclick="getKey()">Get Free Key</button>
+    </div>
+
+    <script>
+        // Global click counter and stats (stored in memory)
+        let globalClickCount = 0;
+        let sessionClicks = 0;
+        let redirectCount = 0;
+        let lastClickTime = null;
+        let startTime = new Date();
+        
+        // Matrix rain effect
+        function createMatrixRain() {
+            const matrixBg = document.getElementById('matrix-bg');
+            const japaneseChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789';
+            
+            for (let i = 0; i < 100; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = japaneseChars[Math.floor(Math.random() * japaneseChars.length)];
+                char.style.left = Math.random() * 100 + '%';
+                char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                char.style.animationDelay = Math.random() * 2 + 's';
+                
+                // Random rainbow colors
+                const colors = ['#ff0080', '#ff8000', '#ffff00', '#80ff00', '#00ff80', '#00ffff', '#0080ff', '#8000ff'];
+                char.style.color = colors[Math.floor(Math.random() * colors.length)];
+                
+                matrixBg.appendChild(char);
+            }
+        }
+        
+        // Update admin stats display
+        function updateAdminStats() {
+            document.getElementById('globalCounter').textContent = globalClickCount;
+            document.getElementById('totalClicks').textContent = globalClickCount;
+            document.getElementById('sessionClicks').textContent = sessionClicks;
+            document.getElementById('redirectCount').textContent = redirectCount;
+            document.getElementById('lastClickTime').textContent = lastClickTime || 'Never';
+            
+            // Simulate active users (random between 1-8)
+            document.getElementById('activeUsers').textContent = Math.floor(Math.random() * 8) + 1;
+        }
+        
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                document.body.appendChild(particle);
+            }
+        }
+        
+        // Get key button functionality with silent redirect
+        function getKey() {
+            // Increment counters
+            globalClickCount++;
+            sessionClicks++;
+            redirectCount++;
+            
+            // Update last click time
+            const now = new Date();
+            lastClickTime = now.toLocaleTimeString();
+            
+            // Show loading overlay
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            // Update stats display if admin panel is visible
+            if (document.getElementById('adminPanel').style.display === 'block') {
+                updateAdminStats();
+                
+                // Add flash effect to counters
+                const elements = ['globalCounter', 'totalClicks', 'sessionClicks', 'redirectCount'];
+                elements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.transform = 'scale(1.2)';
+                        el.style.color = '#ff0080';
+                        setTimeout(() => {
+                            el.style.transform = 'scale(1)';
+                            el.style.color = el.id === 'globalCounter' ? '#0f0' : '#00ff80';
+                        }, 300);
+                    }
+                });
+            }
+            
+            const keys = [
+                'MTX-RAINBOW-2025-ULTRA',
+                'MATRIX-ZAMAS-PREMIUM-KEY', 
+                'RAINBOW-PORTAL-ACCESS-777',
+                'CYBER-MATRIX-INFINITE-2025',
+                'QUANTUM-RAINBOW-MATRIX-X1'
+            ];
+            
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            
+            // Create floating key animation
+            const keyElement = document.createElement('div');
+            keyElement.textContent = `🔑 ${randomKey}`;
+            keyElement.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 24px;
+                color: #ff0080;
+                z-index: 10000;
+                text-shadow: 0 0 30px currentColor;
+                animation: keyFloat 2s ease-out forwards;
+                pointer-events: none;
+                font-family: 'Orbitron', monospace;
+                font-weight: 700;
+            `;
+            
+            // Add key float animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes keyFloat {
+                    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+                    20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+                    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                    100% { transform: translate(-50%, -200px) scale(0.8); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            document.body.appendChild(keyElement);
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(randomKey).then(() => {
+                console.log('Key copied to clipboard: ' + randomKey);
+            });
+            
+            // Silent redirect after animation
+            setTimeout(() => {
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                // Clean up animation elements
+                keyElement.remove();
+                style.remove();
+                
+                // Silent redirect to Roblox link
+                window.location.href = 'https://www.roblox.com/share?code=91939420d851a14a9a542b5d6965b093&type=Server';
+                
+            }, 2500);
+        }
+        
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const adminPanel = document.getElementById('adminPanel');
+            
+            if (username === 'zamas' && password === 'sebas228') {
+                errorMessage.textContent = '';
+                adminPanel.style.display = 'block';
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                
+                // Update all stats when logging in
+                updateAdminStats();
+                
+                // Add success sound effect (visual feedback)
+                document.querySelector('.sidebar').style.boxShadow = '0 0 50px rgba(0,255,0,0.8)';
+                setTimeout(() => {
+                    document.querySelector('.sidebar').style.boxShadow = '0 0 30px rgba(0,255,0,0.3)';
+                }, 1000);
+            } else {
+                errorMessage.textContent = '❌ Credenciales incorrectas';
+                adminPanel.style.display = 'none';
+                
+                // Add error effect
+                document.querySelector('.sidebar').style.boxShadow = '0 0 50px rgba(255,0,64,0.8)';
+                setTimeout(() => {
+                    document.querySelector('.sidebar').style.boxShadow = '0 0 30px rgba(0,255,0,0.3)';
+                }, 1000);
+            }
+        });
+        
+        // Initialize effects
+        createMatrixRain();
+        createParticles();
+        
+        // Add drag functionality to lines
+        document.querySelectorAll('.drag-line').forEach(line => {
+            line.addEventListener('dragstart', (e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                line.style.opacity = '0.5';
+            });
+            
+            line.addEventListener('dragend', (e) => {
+                line.style.opacity = '1';
+            });
+        });
+        
+        // Update active users count periodically (simulate real activity)
+        setInterval(() => {
+            if (document.getElementById('adminPanel').style.display === 'block') {
+                document.getElementById('activeUsers').textContent = Math.floor(Math.random() * 8) + 1;
+            }
+        }, 5000);
+        
+        // Recreate particles periodically
+        setInterval(createParticles, 10000);
+    </script>
+</body>
+</html>
