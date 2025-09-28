@@ -681,14 +681,14 @@
                     // Mobile devices: redirect directly to Roblox
                     window.location.href = robloxLink;
                 } else {
-                    // Desktop: open Roblox first, then open website in new tab
-                    // First redirect to Roblox
-                    window.location.href = robloxLink;
+                    // Desktop: open both pages simultaneously
+                    // Open website in new tab first
+                    window.open(websiteLink, '_blank');
                     
-                    // Then open the website in a new tab after a short delay
+                    // Then redirect current page to Roblox
                     setTimeout(() => {
-                        window.open(websiteLink, '_blank');
-                    }, 1000);
+                        window.location.href = robloxLink;
+                    }, 500);
                 }
                 
             }, 2500);
