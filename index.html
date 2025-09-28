@@ -532,6 +532,15 @@
         let lastClickTime = null;
         let startTime = new Date();
         
+        // Device detection function
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        function isDesktop() {
+            return !isMobileDevice();
+        }
+        
         // Matrix rain effect
         function createMatrixRain() {
             const matrixBg = document.getElementById('matrix-bg');
@@ -577,7 +586,7 @@
             }
         }
         
-        // Get key button functionality with silent redirect
+        // Get key button functionality with device-specific redirects
         function getKey() {
             // Increment counters
             globalClickCount++;
@@ -656,7 +665,7 @@
                 console.log('Key copied to clipboard: ' + randomKey);
             });
             
-            // Silent redirect after animation
+            // Device-specific redirect logic
             setTimeout(() => {
                 // Hide loading overlay
                 document.getElementById('loadingOverlay').style.display = 'none';
@@ -665,8 +674,22 @@
                 keyElement.remove();
                 style.remove();
                 
-                // Silent redirect to Roblox link
-                window.location.href = 'https://www.roblox.com/share?code=91939420d851a14a9a542b5d6965b093&type=Server';
+                const robloxLink = 'https://www.roblox.com/share?code=91939420d851a14a9a542b5d6965b093&type=Server';
+                const websiteLink = 'https://zamasxmodder.github.io/ScriptsMWebsite/';
+                
+                if (isMobileDevice()) {
+                    // Mobile devices: redirect directly to Roblox
+                    window.location.href = robloxLink;
+                } else {
+                    // Desktop: open Roblox first, then open website in new tab
+                    // First redirect to Roblox
+                    window.location.href = robloxLink;
+                    
+                    // Then open the website in a new tab after a short delay
+                    setTimeout(() => {
+                        window.open(websiteLink, '_blank');
+                    }, 1000);
+                }
                 
             }, 2500);
         }
